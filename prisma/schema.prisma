@@ -13,9 +13,12 @@ model User {
   name      String
   email     String   @unique
   password  String
+  photo     String?
+  phone     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   todos     Todo[]
+  post      Post[]
 }
 
 model Todo {
@@ -26,3 +29,28 @@ model Todo {
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id])
 }
+
+model Post {
+  id             Int             @id @default(autoincrement())
+  title          String
+  content        String
+  userId         Int
+  user           User     @relation(fields: [userId], references: [id])
+  postCategories PostCategory[]
+}
+
+model Category {
+  id             Int             @id @default(autoincrement())
+  name           String
+  postCategories PostCategory[]
+}
+
+model PostCategory {
+  post       Post     @relation(fields: [postId], references: [id])
+  postId     Int
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId Int
+
+  @@id([postId, categoryId]) // Composite key untuk mencegah duplikasi
+}
+

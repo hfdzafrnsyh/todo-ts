@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
-import { CreateUserSchema, LoginSchema } from "../validators/user.validator";
-import { NextFunction, Request,Response } from "express";
+import { CreateUserSchema, LoginSchema, UpdateUserSchema } from "../validators/user.validator";
+import { NextFunction, Request,Response, response } from "express";
 import { UserService } from "../services/UserService";
 import jwt from "jsonwebtoken";
 import { getHttpStatus } from "../helper/httpStatus";
@@ -20,7 +20,7 @@ export class UserController{
                 return res.status(400).json({error : parsed.error.errors});
             }
 
-            const { name , email , password } = req.body;
+            const { name , email , password } = parsed.data;
 
             const hashPassword = await bcrypt.hash(password,10);
 
@@ -32,8 +32,8 @@ export class UserController{
 
     
             return res.status(201).json({
-                    "success" : true,
-                    "data" : user
+                    success : true,
+                    data : user
                 });
 
         }catch(error : any){
@@ -52,13 +52,13 @@ export class UserController{
         try{
             const user = await userService.findAll();
             return res.status(200).json({
-                "success" : true,
-                "data" : user
+                success : true,
+                data : user
             });
         }catch(error : any){
             return res.status(500).json({
-                "success" : false,
-                "error" : "Internal server error"
+                success : false,
+                error : "Internal server error"
             });
         }
 
@@ -76,9 +76,9 @@ export class UserController{
             
             const SECRET : string = process.env.SECRET!;
             
-            const { email , password } = req.body;
+            const { email , password } = parsed.data;
 
-           const user = await userService.login(email,password);
+           const user = await userService.login({email,password});
 
             const token = jwt.sign(
                 {
@@ -90,9 +90,9 @@ export class UserController{
               });
            
             return res.status(200).json({
-                 "success" : true,
-                  "data" : user,
-                  "token" : token
+                 success : true,
+                  data : user,
+                  token : token
               });
 
        }catch (error: any) {
@@ -105,6 +105,72 @@ export class UserController{
         });
 
       }
+
+    }
+
+    profile = async (req : Request , res : Response , next : NextFunction) => {
+
+        try{
+            const userId = (req as any).user?.userId;
+
+            const user = await userService.profile(userId);
+
+            return res.status(200).json({
+                success : true,
+                data : user
+            });
+
+        }catch (error: any) {
+        
+            const status = getHttpStatus(error);
+    
+            return res.status(status).json({
+              success: false,
+              error: error.message || 'Internal Server Error',
+            });
+    
+          }
+
+    }
+
+    updateProfile = async (req : Request , res : Response , next : NextFunction) => {
+
+        try{
+
+            const parsed = UpdateUserSchema.safeParse(req.body);
+
+            if(!parsed.success){
+                return res.status(400).json({error : parsed.error.errors});
+            }
+
+        
+            const  { name , phone }  = parsed.data;
+
+        
+            const file = req.file;
+
+            const userId = (req as any).user?.userId;
+
+            const photo = file ? `${req.protocol}://${req.get('host')}/public/uploads/users/${file.filename}` 
+            : undefined 
+
+            const user = await userService.updateProfile(userId,{name ,phone , photo});
+
+            return res.status(200).json({
+                success : true,
+                data : user
+            })
+            
+        }catch (error: any) {
+        
+            const status = getHttpStatus(error);
+    
+            return res.status(status).json({
+              success: false,
+              error: error.message || 'Internal Server Error',
+            });
+    
+          }
 
     }
 }

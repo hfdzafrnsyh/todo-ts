@@ -10,13 +10,13 @@ export class TodoController{
         try{
             const todo = await todoService.findAll();
             return  res.status(200).json({
-                "success" : true,
-                "data" : todo
+                success : true,
+                data : todo
             });
         }catch(error : any){
             return  res.status(500).json({
-                "success" : false,
-                "error" : "Internal server error"
+                success : false,
+                error : "Internal server error"
             });
         }
     }
@@ -37,19 +37,19 @@ export class TodoController{
               }
 
 
-             const { title } = req.body;
+             const { title } = parsed.data;
 
              const todo = await todoService.create({title,userId})
           
              return  res.status(201).json({
-                "success" : true,
-                "data" : todo
+                success : true,
+                data : todo
             });
 
         }catch(error : any){
             return res.status(500).json({
-                "success" : false,
-                "error" : "Internal server error"
+                success : false,
+                error : "Internal server error"
             });
         }
     }
@@ -62,8 +62,8 @@ export class TodoController{
             const todo = await todoService.detail(todoId);
 
             return  res.status(200).json({
-                "success" : true,
-                "data" : todo
+                success : true,
+                data : todo
             });
 
         }catch(error : any){
@@ -86,8 +86,8 @@ export class TodoController{
             await todoService.delete(todoId);
 
             return  res.status(200).json({
-                "success" : true,
-                "message" : "Remove successuffly" 
+                success : true,
+                message : "Remove successuffly" 
             });
 
         }catch(error : any){
@@ -112,13 +112,13 @@ export class TodoController{
 
             const todoId : number = parseInt(req.params.id);
 
-            const {title} = req.body;
+            const {title} = parsed.data;
 
-            const todo = await todoService.update(todoId,title);
+            const todo = await todoService.update(todoId,{title});
 
             return  res.status(200).json({
-                "success" : true,
-                "data" : todo 
+                success : true,
+                data : todo 
             });
 
         }catch(error : any){
@@ -126,8 +126,8 @@ export class TodoController{
             const status = getHttpStatus(error);
             
             return res.status(status).json({
-            success: false,
-            error: error.message || 'Internal Server Error',
+                success: false,
+                error: error.message || 'Internal Server Error',
             });
         }
     }

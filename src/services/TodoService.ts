@@ -1,6 +1,6 @@
 import prisma from "../prisma";
 import { Todo } from "../../generated/prisma";
-import { CreateTodoDTO } from "../validators/todo.validator";
+import { CreateTodoDTO, UpdateTodoDTO } from "../validators/todo.validator";
 
 
 
@@ -48,15 +48,15 @@ export class TodoService{
             throw new Error("Data not found");
         }
 
-      return await prisma.todo.delete({
-            where : { id : id}
-        })
+        return await prisma.todo.delete({
+                where : { id : id}
+            })
 
 
     }
 
 
-    async update( id : number, title : string){
+    async update( id : number, data : UpdateTodoDTO){
 
         const todo  = await prisma.todo.findUnique({
             where : {id : id},
@@ -68,7 +68,7 @@ export class TodoService{
 
         const updateTodo = await prisma.todo.update({
             where : {id},
-            data: {title : title}
+            data: {title : data.title}
         })
 
         return updateTodo;
